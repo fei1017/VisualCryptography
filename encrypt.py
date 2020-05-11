@@ -212,7 +212,7 @@ def encrypt(secret):
 	cv2.imwrite('rp2.jpg',pattern_to_image(rp2))
 
 	join_rp = join(rp1,rp2)
-	cv2.imwrite('joinrp.jpg',pattern_to_image(joinrp))
+	cv2.imwrite('joinrp.jpg',pattern_to_image(join_rp))
 
 	sp1 = void_and_cluster(secret,rp1)
 	sp2 = void_and_cluster(secret,rp2)
@@ -220,6 +220,6 @@ def encrypt(secret):
 	cv2.imwrite('sp1.jpg',pattern_to_image(sp1))
 	cv2.imwrite('sp2.jpg',pattern_to_image(sp2))
 
-	joinsp = join(rp1,rp2)
-	cv2.imwrite('joinsp.jpg',pattern_to_image(joinsp))
+	join_sp = join(rp1,rp2)
+	cv2.imwrite('joinsp.jpg',pattern_to_image(join_sp))
 

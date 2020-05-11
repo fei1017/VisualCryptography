@@ -1,3 +1,4 @@
+import cv2
 from encrypt import encrypt
 
 ## main
