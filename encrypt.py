@@ -208,18 +208,18 @@ def encrypt(secret):
 
 	rp1,rp2 = generate_random_pattern(secret)
 
-	cv2.imwrite('rp1.jpg',pattern_to_image(rp1))
-	cv2.imwrite('rp2.jpg',pattern_to_image(rp2))
+	cv2.imwrite('output/rp1.jpg',pattern_to_image(rp1))
+	cv2.imwrite('output/rp2.jpg',pattern_to_image(rp2))
 
 	join_rp = join(rp1,rp2)
-	cv2.imwrite('joinrp.jpg',pattern_to_image(join_rp))
+	cv2.imwrite('output/join_rp.jpg',pattern_to_image(join_rp))
 
 	sp1 = void_and_cluster(secret,rp1)
 	sp2 = void_and_cluster(secret,rp2)
 
-	cv2.imwrite('sp1.jpg',pattern_to_image(sp1))
-	cv2.imwrite('sp2.jpg',pattern_to_image(sp2))
+	cv2.imwrite('output/sp1.jpg',pattern_to_image(sp1))
+	cv2.imwrite('output/sp2.jpg',pattern_to_image(sp2))
 
 	join_sp = join(rp1,rp2)
-	cv2.imwrite('joinsp.jpg',pattern_to_image(join_sp))
+	cv2.imwrite('output/join_sp.jpg',pattern_to_image(join_sp))
 
