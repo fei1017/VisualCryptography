@@ -8,8 +8,13 @@ white_tag = 0
 black_pixel = 0
 white_pixel = 255
 
+def resize(img, height=800):
+    """ Resize image to given height """
+    rat = height / img.shape[0]
+    return cv2.resize(img, (int(rat * img.shape[1]), height))
+
 def halftoning(image):
-	##now are only binarizing
+	##now only binarizing
 	height,width = image.shape
 	resultImage = np.zeros((height,width),np.uint8)
 	for i in range(height):
@@ -34,7 +39,7 @@ def generate_random_pattern(secret):
 	for i in range(height):
 		for j in range(width):
 			rn = random.random()
-			if rn < 0.5:
+			if rn < 0.45:
 				tag = black_tag
 			else:
 				tag = white_tag
@@ -56,9 +61,9 @@ def generate_random_pattern(secret):
 # 	for i in range(height):
 # 		for j in range(width):
 # 			if image1[i,j] == image2[i,j]:
-# 				resultImage[i,j] = white
+# 				resultImage[i,j] = white_tag
 # 			else:
-# 				resultImage[i,j] = black
+# 				resultImage[i,j] = black_tag
 # 	return resultImage
 
 def join(image1,image2):
@@ -103,7 +108,9 @@ def void_and_cluster(secret,pattern):
 	M = 3
 	N = 3
 	def gaussian(x, y):
-		sigma = 1.5
+		sigma = 1.9
+		if abs(m)+abs(n) > 13:
+			return 0
 		return math.exp(-1*((abs(x)+abs(y))**2)/(2*(sigma**2)))
 
 	mask = np.zeros((M,N),np.float)
@@ -112,25 +119,24 @@ def void_and_cluster(secret,pattern):
 			mask[m,n] = gaussian(m,n)
 
 	height,width = pattern.shape
-	DA = np.zeros((height,width),np.float)
+	energy = np.zeros((height,width),np.float)
 	for i in range(height):
-			for j in range(width):
-				if pattern[i,j] == black_tag:
-					for m in range(-1*math.floor(M/2),math.ceil(M/2)):
-						for n in range(-1*math.floor(N/2),math.ceil(N/2)):
-							DA[i,j] += pattern[bound(i+m,height),bound(j+n,width)]*mask[m,n]
+		for j in range(width):
+			for m in range(-1*math.floor(M/2),math.ceil(M/2)):
+				for n in range(-1*math.floor(N/2),math.ceil(N/2)):
+					if abs(m)+abs(n) > 13:
+						continue
+					energy[i,j] += pattern[bound(i+m,height),bound(j+n,width)]*mask[m,n]
 
 	idx = 0
 	while(1):
 		max = 0
 		min = 999
-		max_position = (height,width)
-		min_position = (height,width)
 		for i in range(height):
 			for j in range(width):
 				if pattern[i,j] == black_tag:
-					if DA[i,j] > max:
-						max = DA[i,j]
+					if energy[i,j] > max:
+						max = energy[i,j]
 						max_position = (i,j)
 
 		pattern[max_position] = white_tag
@@ -139,20 +145,22 @@ def void_and_cluster(secret,pattern):
 			for j in range(-1*math.floor(N/2),math.ceil(N/2)):
 				if out_of_bound(i+centre[0],height) or out_of_bound(j+centre[1],width):
 					continue
-				DA[i+centre[0],j+centre[1]] -= mask[i,j]
+				if abs(i)+abs(j) > 13:
+					continue
+				energy[i+centre[0],j+centre[1]] -= mask[i,j]
 
 		for i in range(height):
 			for j in range(width):
 				if secret[i,j] == secret[max_position] and pattern[i,j] == white_tag:
-					if DA[i,j] < min:
-						min = DA[i,j]
+					if energy[i,j] < min:
+						min = energy[i,j]
 						min_position = (i,j)
 
 		pattern[min_position] = black_tag
 		if min_position == max_position:
 			break
 
-		#debug#
+		#debug# 
 		print(idx,min_position,max_position)
 		idx+=1
 		#debug#
@@ -162,8 +170,9 @@ def void_and_cluster(secret,pattern):
 			for j in range(-1*math.floor(N/2),math.ceil(N/2)):
 				if out_of_bound(i+centre[0],height) or out_of_bound(j+centre[1],width):
 					continue
-				DA[i+centre[0],j+centre[1]] += mask[i,j]
-
+				if abs(i)+abs(j) > 13:
+					continue
+				energy[i+centre[0],j+centre[1]] += mask[i,j]
 
 	# idx = 0
 	# while(1):
@@ -205,6 +214,7 @@ def void_and_cluster(secret,pattern):
 
 def encrypt(secret):
 	secret = halftoning(secret)
+	print(secret.shape)
 
 	rp1,rp2 = generate_random_pattern(secret)
 
@@ -223,3 +233,5 @@ def encrypt(secret):
 	join_sp = join(rp1,rp2)
 	cv2.imwrite('output/join_sp.jpg',pattern_to_image(join_sp))
 
+	joinjoin = join(join_rp,join_sp)
+	cv2.imwrite('output/joinjoin.jpg',pattern_to_image(joinjoin))
