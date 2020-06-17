@@ -10,3 +10,9 @@
   
 ## Todo:
 1. Image input
+
+
+'''
+import halftone
+'''
+git clone from https://github.com/philgyford/python-halftone
